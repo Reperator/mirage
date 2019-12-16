@@ -20,8 +20,46 @@ let generate_manifest_json () =
     Fmt.strf {json|{ "name": %S, "type": %S }|json}
       name
       (match typ with `Network -> "NET_BASIC" | `Block -> "BLOCK_BASIC") in
-  let devices = List.map to_string (networks @ blocks) in
-  let s = String.concat ~sep:", " devices in
+  let devices = List.map to_string (networks @ blocks) in  let pci_devs =
+    List.map
+      (fun (di, name) ->
+        Fmt.strf
+{json|{
+      "name": %S,
+      "type": "PCI_BASIC",
+      "bus_master_enable": %b,
+      "map_bar0": %b,
+      "map_bar1": %b,
+      "map_bar2": %b,
+      "map_bar3": %b,
+      "map_bar4": %b,
+      "map_bar5": %b,
+      "class": %d,
+      "subclass": %d,
+      "progif": %d,
+      "vendor": %d,
+      "device_id": %d
+    }|json}
+          name
+          di.Mirage_impl_pci.bus_master_enable
+          di.Mirage_impl_pci.map_bar0
+          di.Mirage_impl_pci.map_bar1
+          di.Mirage_impl_pci.map_bar2
+          di.Mirage_impl_pci.map_bar3
+          di.Mirage_impl_pci.map_bar4
+          di.Mirage_impl_pci.map_bar5
+          di.Mirage_impl_pci.class_code
+          di.Mirage_impl_pci.subclass_code
+          di.Mirage_impl_pci.progif
+          di.Mirage_impl_pci.vendor_id
+          di.Mirage_impl_pci.device_id)
+      !Mirage_impl_pci.all_pci_devices in
+  let s = String.concat ~sep:",\n    " (devices @ pci_devs) in
+  let dma_size =
+    List.fold_left
+      (fun acc ({ Mirage_impl_pci.dma_size; _ }, _) -> acc + dma_size)
+      0
+      !Mirage_impl_pci.all_pci_devices in
   let open Codegen in
   let file = solo5_manifest_path in
   with_output file (fun oc () ->
@@ -30,9 +68,10 @@ let generate_manifest_json () =
 {json|{
   "type": "solo5.manifest",
   "version": 1,
+  "dma_size": %d
   "devices": [ %s ]
 }
-|json} s;
+|json} dma_size s;
       R.ok ())
     "Solo5 application manifest file"
 

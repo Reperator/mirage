@@ -6,7 +6,7 @@
   (libraries   mirage-device mirage-time mirage-random mirage-flow
                mirage-console mirage-block mirage-clock mirage-net
                mirage-kv mirage-fs mirage-channel
-               mirage-protocols mirage-stack))
+               mirage-protocols mirage-stack mirage-pci))
 
 (library
   (name        mirage_types_lwt)
