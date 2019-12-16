@@ -87,6 +87,10 @@ module type BLOCK = Mirage_block.S
 [@@ocaml.deprecated
   "This will be removed from MirageOS 4.0, use Mirage_block.S."]
 
+module type PCI = Mirage_pci.S
+[@@ocaml.deprecated "This will be removed from MirageOS 4.0, use Mirage_pci.S."]
+(** {2 PCIe module} *)
+
 module type NETWORK = Mirage_net.S
 [@@ocaml.deprecated "This will be removed from MirageOS 4.0, use Mirage_net.S."]
 (** {2 Network module} *)
